@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Result Portal — Demo</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ---------- Global ---------- */
+body {
+  margin: 0;
+  font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg,#e8f7ff,#ffffff 60%);
+  min-height: 100vh;
+}
+
+/* ---------- App Container ---------- */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 18px;
+  position: relative;
+}
+
+/* ---------- Watermark ---------- */
+.watermark {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 0;
+  font-size: 96px;
+  opacity: 0.06;
+  transform: rotate(-20deg);
+  color: #000;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ---------- Marquee ---------- */
+.marquee {
+  width: 100%;
+  max-width: 1100px;
+  background:#093b7a;
+  color:#fff;
+  border-radius:8px;
+  padding:10px 16px;
+  font-weight:600;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  overflow: hidden;
+}
+.marquee marquee { 
+  font-size: 14px; 
+}
+
+/* ---------- Card ---------- */
+.card {
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: 0.3s all;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+}
+
+/* ---------- Heading ---------- */
+.card h3 {
+  color: #0b3b84;
+  margin-bottom: 4px;
+  font-size: 22px;
+  text-align: center;
+}
+.card p {
+  color: #44506b;
+  font-weight: 500;
+  font-size: 13px;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+/* ---------- Input Fields ---------- */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+label {
+  font-weight: 600;
+  color: #1e2b4a;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.input {
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid #d6e2ff;
+  background: #f3f7ff;
+  font-size: 14px;
+  transition: 0.25s all;
+}
+.input:focus {
+  outline: none;
+  border-color: #0a57ff;
+  background: #e6f0ff;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  padding: 14px 22px;
+  background: #0a57ff;
+  color: #fff;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.25s all;
+  flex: 1;
+}
+.btn:hover { background: #0846cc; }
+
+.btn.secondary {
+  background: #f2f2f2;
+  color: #333;
+  border: 1px solid #ddd;
+}
+.btn.secondary:hover { background: #e0e0e0; }
+
+/* ---------- Flex Utilities ---------- */
+.flex {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.flex-full { flex:1; min-width:160px; }
+
+/* ---------- Footer Info ---------- */
+.card .info {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width:600px){
+  .card { padding: 28px 20px; }
+  .flex { flex-direction: column; align-items: stretch; }
+  .btn { width: 100%; }
+}
+@media (max-width:400px){
+  .watermark { font-size: 72px; }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <div class="watermark">DEMO</div>
+
+  <div class="marquee"><marquee behavior="scroll" direction="left">*** DEMO RESULT PORTAL — NOT FOR OFFICIAL USE ***</marquee></div>
+
+  <div class="card">
+    <h3>Student Result Lookup</h3>
+    <p>Enter registration number and DOB to view result</p>
+
+    <div class="flex">
+      <div class="input-group flex-full">
+        <label for="reg">Registration Number</label>
+        <input id="reg" class="input" type="text" placeholder="2418380XXXXX">
+      </div>
+
+      <div class="input-group flex-full">
+        <label for="dob">Date of Birth</label>
+        <input id="dob" class="input" type="date">
+      </div>
+
+      <div class="flex-full" style="display:flex; gap:12px; flex-wrap: wrap;">
+        <button class="btn" id="viewBtn">View Scorecard</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div class="info">
+      Results pulled from Firebase Firestore
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAz-yo7PmFo0eFyzfjQwCP3yiB5GqqpTp0",
+  authDomain: "studentdashboard-681a8.firebaseapp.com",
+  projectId: "studentdashboard-681a8",
+  storageBucket: "studentdashboard-681a8.firebasestorage.app",
+  messagingSenderId: "171483691299",
+  appId: "1:171483691299:web:f2bc4e00b696c55b4cf496",
+  measurementId: "G-RVFB0Z9TFS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const viewBtn = document.getElementById('viewBtn');
+const resetBtn = document.getElementById('resetBtn');
+const regInput = document.getElementById('reg');
+const dobInput = document.getElementById('dob');
+
+viewBtn.addEventListener('click', async () => {
+  const reg = regInput.value.trim();
+  const dob = dobInput.value;
+
+  if(!reg){ alert('Enter registration number'); regInput.focus(); return; }
+  if(!dob){ alert('Enter date of birth'); dobInput.focus(); return; }
+
+  try{
+    const docRef = doc(db,'results',reg);
+    const snap = await getDoc(docRef);
+
+    if(!snap.exists() || (snap.data().dob && snap.data().dob !== dob)){
+      alert('Invalid credentials');
+      return;
+    }
+
+    sessionStorage.setItem('accessGranted','true');
+    sessionStorage.setItem('regNo',reg);
+    window.location.href='result.html';
+  }catch(err){
+    console.error(err);
+    alert('Error fetching data');
+  }
+});
+
+resetBtn.addEventListener('click',()=>{
+  regInput.value='';
+  dobInput.value='';
+});
+</script>
+</body>
+</html>

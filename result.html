@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Result — Demo</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --blue:#0a57ff;
+    --muted:#6b7280;
+    --bg:#f6f9ff;
+    --card:#fff;
+    --pass-bg:#e6ffed;
+    --fail-bg:#ffe6e6;
+    --back-btn:#0a57ff;
+    --decl-bg:#fffae6;
+  }
+  body{
+    margin:0;
+    font-family:"Poppins",system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+    background:var(--bg);
+    color:#102638;
+    padding:18px;
+  }
+  .wrap{ max-width:1100px; margin:0 auto; }
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:24px;
+    box-shadow:0 10px 30px rgba(11,35,70,0.06);
+    text-align:center;
+  }
+  h1{ margin:12px 0 6px 0; color:#0b3b84; font-size:22px; }
+  .meta{ color:var(--muted); font-weight:600; font-size:13px; margin-bottom:12px; text-align:center; }
+
+  /* Logo */
+  .logo {
+    display:block;
+    margin:0 auto 12px auto;
+    width:120px;
+    height:120px;
+    object-fit:contain;
+  }
+
+  /* Declaration date highlight */
+  .decl-date {
+    display:inline-block;
+    background:var(--decl-bg);
+    color:#b87300;
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:8px;
+    margin-bottom:18px;
+    font-size:14px;
+  }
+
+  .student {
+    display:flex;
+    gap:18px;
+    margin-bottom:10px;
+    flex-wrap:wrap;
+    text-align:left;
+  }
+  .stu-col{ flex:1; min-width:220px; }
+
+  .marks-wrap{ margin-top:14px; text-align:left; }
+  .table-wrap{ overflow:auto; border-radius:8px; border:1px solid #e6eefc; }
+  table{ border-collapse:collapse; width:100%; min-width:820px; }
+  th, td{ padding:10px 12px; border:1px solid #e7eefc; text-align:center; font-size:14px; vertical-align:middle; }
+  th{ background:#eef6ff; font-weight:700; color:#0b3b84; }
+  .subject-name{ text-align:left; padding-left:14px; }
+
+  .subject-pass{ background:var(--pass-bg); color:#0a5a2a; font-weight:700; }
+  .subject-fail{ background:var(--fail-bg); color:#6b0510; font-weight:700; }
+
+  .summary { display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; align-items:center; }
+  .summary .box{ padding:10px 12px; border-radius:8px; background:#fbfdff; border:1px solid #e6eefc; min-width:220px; }
+  .summary strong{ display:block; font-size:14px; margin-bottom:6px; color:#0b3b84; }
+  .reappear-list{ margin-top:12px; color:#6b0510; font-weight:700; }
+
+  .back-btn {
+    display:inline-block;
+    padding:10px 18px;
+    border-radius:8px;
+    border:none;
+    background:var(--back-btn);
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    text-decoration:none;
+    margin-top:18px;
+    transition:all 0.3s ease;
+  }
+  .back-btn:hover {
+    background:#0846cc;
+    transform:translateY(-2px);
+  }
+
+  @media (max-width:900px){
+    .student{ flex-direction:column; }
+    table{ font-size:13px; min-width:720px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="scoreCard">
+      
+      <!-- Logo -->
+      <img style="border-radius:50%;"src="https://i.ibb.co/v4HcTn0P/file-00000000c35861f8b1c096973dbe682e.png" alt="AIML Portal" class="logo">
+
+      <h1 id="title">Result</h1>
+      <div class="meta">Official result layout (demo). Check university website for official records.</div>
+
+      <!-- Declaration date -->
+      <div class="decl-date" id="declDate">Declaration: —</div>
+
+      <div class="student" id="studentInfo">
+        <!-- JS fills student info here -->
+      </div>
+
+      <div class="marks-wrap">
+        <h3 style="margin:6px 0 8px 0;color:#0b3b84">Obtained Marks Details</h3>
+        <div class="table-wrap">
+          <table id="marksTable" aria-live="polite">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Theory 1</th>
+                <th>Theory 2</th>
+                <th>Theory 3</th>
+                <th>Sessional</th>
+                <th>Practical</th>
+                <th>Practical Sessional</th>
+                <th>Subject Total</th>
+              </tr>
+            </thead>
+            <tbody id="marksBody">
+              <!-- rows inserted here -->
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="7" style="text-align:right;font-weight:800">Total — Obtained / Out of</td>
+                <td id="grandTotal" style="text-align:right;font-weight:900">0 / 0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="summary">
+          <div class="box">
+            <strong>Overall Result</strong>
+            <div id="overallResultText">—</div>
+          </div>
+
+          <div class="box">
+            <strong>Notes</strong>
+            <div id="notes" style="color:var(--muted)">Subject less than 40% will be marked REAPPEAR.</div>
+          </div>
+        </div>
+
+        <div id="reappearList" class="reappear-list" aria-live="polite"></div>
+
+        <!-- Only back button -->
+        <button class="back-btn" id="backBtn">Back</button>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAz-yo7PmFo0eFyzfjQwCP3yiB5GqqpTp0",
+  authDomain: "studentdashboard-681a8.firebaseapp.com",
+  projectId: "studentdashboard-681a8",
+  storageBucket: "studentdashboard-681a8.firebasestorage.app",
+  messagingSenderId: "171483691299",
+  appId: "1:171483691299:web:f2bc4e00b696c55b4cf496",
+  measurementId: "G-RVFB0Z9TFS"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const access = sessionStorage.getItem('accessGranted');
+const reg = sessionStorage.getItem('regNo');
+if (!access || !reg) window.location.href = 'index.html';
+
+const studentInfoEl = document.getElementById('studentInfo');
+const marksBody = document.getElementById('marksBody');
+const grandTotalEl = document.getElementById('grandTotal');
+const overallResultText = document.getElementById('overallResultText');
+const reappearListEl = document.getElementById('reappearList');
+const backBtn = document.getElementById('backBtn');
+const declDateEl = document.getElementById('declDate');
+
+const DEFAULT_MAX = { theory:100, sessional:25, practical:50, practicalSessional:25 };
+
+function escapeHtml(s){
+  if(s===undefined||s===null) return '';
+  return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')
+                  .replaceAll('"','&quot;').replaceAll("'",'&#39;');
+}
+
+function parseField(raw, columnType){
+  const v = (raw??'').toString().trim();
+  if(!v) return {obt:null,max:null};
+  const parts = v.split('/').map(x=>x.trim());
+  if(parts.length>=2 && parts[0]!='' && parts[1]!=''){
+    const obt = Number(parts[0]), mx = Number(parts[1]);
+    return {obt:isNaN(obt)?null:obt, max:isNaN(mx)?null:mx};
+  }
+  const single = parts[0];
+  if(single=='') return {obt:null,max:null};
+  const obt = Number(single);
+  return {obt:isNaN(obt)?null:obt,max:DEFAULT_MAX[columnType]??null};
+}
+
+async function loadAndRender(){
+  try{
+    const docRef = doc(db,'results',reg);
+    const snap = await getDoc(docRef);
+    if(!snap.exists()){ alert('Result not found'); sessionStorage.clear(); window.location.href='index.html'; return; }
+    render(snap.data());
+  } catch(err){ console.error(err); alert('Error loading result.'); window.location.href='index.html'; }
+}
+
+function render(data){
+  // logo already in HTML
+  declDateEl.textContent = 'Declaration: ' + (data.declarationDate || '—');
+
+  studentInfoEl.innerHTML = `
+    <div class="stu-col">
+      <div><strong>Reg. No.:</strong> ${escapeHtml(data.regNo||'')}</div>
+      <div style="margin-top:6px"><strong>Student Name:</strong> ${escapeHtml(data.name||'')}</div>
+      <div style="margin-top:6px"><strong>Sem/Part:</strong> ${escapeHtml(data.semPart||'')}</div>
+      <div style="margin-top:6px"><strong>Course Name:</strong> ${escapeHtml(data.courseName||'')}</div>
+    </div>
+    <div class="stu-col">
+      <div><strong>Roll No.:</strong> ${escapeHtml(data.rollNo||'')}</div>
+      <div style="margin-top:6px"><strong>Father Name:</strong> ${escapeHtml(data.fatherName||'')}</div>
+      <div style="margin-top:6px"><strong>College Code:</strong> ${escapeHtml(data.collegeCode||'')}</div>
+      <div style="margin-top:6px"><strong>College Name:</strong> ${escapeHtml(data.collegeName||'')}</div>
+    </div>
+  `;
+
+  marksBody.innerHTML='';
+  let grandObt=0, grandMax=0;
+  const reappearSubjects=[];
+
+  const subjects = Array.isArray(data.subjects)? data.subjects : [];
+  subjects.forEach(s=>{
+    const name = s.name||s.code||'';
+    const p1=parseField(s.theory1,'theory');
+    const p2=parseField(s.theory2,'theory');
+    const p3=parseField(s.theory3,'theory');
+    const ps=parseField(s.sessional,'sessional');
+    const pp=parseField(s.practical,'practical');
+    const pps=parseField(s.practicalSessional,'practicalSessional');
+
+    const obtainedSum = [p1,p2,p3,ps,pp,pps].reduce((a,x)=>a+(x.obt??0),0);
+    const maxSum = [p1,p2,p3,ps,pp,pps].reduce((a,x)=>a+(x.max??0),0);
+
+    let status='neutral';
+    if(maxSum>0) status=obtainedSum>=0.4*maxSum?'pass':'fail';
+    if(status==='fail') reappearSubjects.push(name||'(Unnamed subject)');
+
+    const row = document.createElement('tr');
+    if(status==='pass') row.classList.add('subject-pass');
+    if(status==='fail') row.classList.add('subject-fail');
+    row.innerHTML=`
+      <td class="subject-name">${escapeHtml(name)}</td>
+      <td>${escapeHtml(s.theory1||'')}</td>
+      <td>${escapeHtml(s.theory2||'')}</td>
+      <td>${escapeHtml(s.theory3||'')}</td>
+      <td>${escapeHtml(s.sessional||'')}</td>
+      <td>${escapeHtml(s.practical||'')}</td>
+      <td>${escapeHtml(s.practicalSessional||'')}</td>
+      <td style="text-align:right">${obtainedSum} / ${maxSum}</td>
+    `;
+    marksBody.appendChild(row);
+
+    grandObt+=obtainedSum;
+    grandMax+=maxSum;
+  });
+
+  grandTotalEl.textContent=`${grandObt} / ${grandMax}`;
+  const overallPass = reappearSubjects.length===0;
+  overallResultText.textContent = overallPass?'PASS':'REAPPEAR';
+  overallResultText.style.color = overallPass?'#0a5a2a':'#6b0510';
+  overallResultText.style.fontWeight='800';
+
+  if(reappearSubjects.length) reappearListEl.innerHTML='REAPPEAR IN: '+reappearSubjects.map(r=>escapeHtml(r)).join(', ');
+  else reappearListEl.innerHTML='';
+
+  document.title=`${data.name||'Student'} — Result`;
+}
+
+backBtn.addEventListener('click',()=>{
+  sessionStorage.clear();
+  window.location.href='index.html';
+});
+
+loadAndRender();
+</script>
+</body>
+</html>

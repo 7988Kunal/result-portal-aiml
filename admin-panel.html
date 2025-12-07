@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin Panel — Result Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --blue:#0a57ff; --muted:#6b7280; --bg:#f5f8ff; --card:#fff; --pass:#e6ffed; --fail:#ffe6e6; }
+  *{ box-sizing:border-box; }
+  body{ font-family:"Poppins",sans-serif; margin:0; padding:20px; background:var(--bg); color:#123; }
+  header{ display:flex;justify-content:space-between;align-items:center;gap:12px; flex-wrap:wrap; margin-bottom:18px;}
+  h2{ margin:0; color:#0b3b84;}
+  .btn{ padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:600;}
+  .btn.primary{ background:var(--blue); color:#fff; }
+  .btn.secondary{ background:#f2f2f2; color:#111; border:1px solid #ddd; }
+  .card{ background:var(--card); padding:16px; border-radius:10px; box-shadow:0 6px 20px rgba(10,30,80,0.06); margin-bottom:18px; }
+  form{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; align-items:end; }
+  label{ font-size:13px; color:#0b3b84; margin-bottom:4px; display:block; font-weight:600;}
+  input[type=text], input[type=date]{ width:100%; padding:8px 10px; border-radius:8px; border:1px solid #d6e2ff; background:#fff; outline:none; }
+  .table-wrapper{ overflow-x:auto; margin-top:12px; }
+  table{ width:100%; border-collapse:collapse; min-width:900px; }
+  th,td{ padding:8px 10px; border:1px solid #e2e8ff; text-align:center; vertical-align:middle; font-size:13px; }
+  th{ background:#eef6ff; font-weight:700; color:#084; }
+  .row-pass{ background:var(--pass); color:#0a5a2a; font-weight:700; }
+  .row-fail{ background:var(--fail); color:#6b0510; font-weight:700; }
+  .subject-total{ font-weight:800; }
+  .small{ font-size:12px; color:var(--muted); margin-top:6px; }
+  @media(max-width:800px){
+    table{ font-size:12px; min-width:700px; }
+    header{ gap:8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h2>Admin Panel — Result Portal</h2>
+    <div class="small">Add / edit student results. Subjects: leave marks empty to ignore.</div>
+  </div>
+  <div>
+    <button class="btn secondary" id="logoutBtn">Logout</button>
+  </div>
+</header>
+
+<main>
+  <section class="card" aria-labelledby="form-title">
+    <h3 id="form-title">Add / Update Student Result</h3>
+
+    <form id="resultForm" autocomplete="off">
+      <div>
+        <label for="regNo">Registration No</label>
+        <input id="regNo" type="text" required placeholder="2418380XXXXX">
+      </div>
+      <div>
+        <label for="name">Student Name</label>
+        <input id="name" type="text" required placeholder="Full name">
+      </div>
+      <div>
+        <label for="rollNo">Roll No</label>
+        <input id="rollNo" type="text" placeholder="Roll number">
+      </div>
+      <div>
+        <label for="fatherName">Father Name</label>
+        <input id="fatherName" type="text" placeholder="Father name">
+      </div>
+      <div>
+        <label for="semPart">Sem / Part</label>
+        <input id="semPart" type="text" placeholder="Sem / Part (eg. 1 DEC 2024)">
+      </div>
+      <div>
+        <label for="courseName">Course Name</label>
+        <input id="courseName" type="text" placeholder="B.TECH (CSE - AI & ML)">
+      </div>
+      <div>
+        <label for="collegeCode">College Code</label>
+        <input id="collegeCode" type="text" placeholder="3402">
+      </div>
+      <div>
+        <label for="collegeName">College Name</label>
+        <input id="collegeName" type="text" placeholder="College name">
+      </div>
+      <div>
+        <label for="dob">Date of Birth</label>
+        <input id="dob" type="date">
+      </div>
+      <div>
+        <label for="declarationDate">Declaration Date</label>
+        <input id="declarationDate" type="date">
+      </div>
+
+      <!-- Subjects table -->
+      <div style="grid-column:1/-1; margin-top:8px;">
+        <h4 style="margin:0 0 8px 0;">Subjects — enter each marks field as <code>obtained/max</code> (e.g. <code>70/75</code>) or leave blank to ignore.</h4>
+        <div class="small">If you type only a number (e.g. <code>70</code>), the system will use a default max for that column. Default: Theory=100, Sessional=25, Practical=50, Practical Sessional=25.</div>
+
+        <div class="table-wrapper">
+          <table id="subjectsTable" aria-label="Subjects table">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th>Theory 1</th>
+                <th>Theory 2</th>
+                <th>Theory 3</th>
+                <th>Sessional</th>
+                <th>Practical</th>
+                <th>Practical Sessional</th>
+                <th>Subject Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:10px;">
+          <button type="button" class="btn primary" id="addSubjectBtn">+ Add Subject</button>
+        </div>
+      </div>
+
+      <!-- overall -->
+      <div style="grid-column:1/-1; display:flex; gap:12px; align-items:center; margin-top:14px;">
+        <div style="flex:1">
+          <label>Total Obtained / Out of</label>
+          <input id="overallTotal" type="text" readonly placeholder="—">
+        </div>
+        <div style="width:220px;">
+          <label>Overall Result</label>
+          <input id="overallResult" type="text" readonly placeholder="PASS / REAPPEAR">
+        </div>
+      </div>
+
+      <div style="grid-column:1/-1; margin-top:12px;">
+        <button type="submit" class="btn primary">Save (Add / Update)</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h3>All Results</h3>
+    <div class="small">Click Edit to load a result into the form.</div>
+    <div class="table-wrapper" style="margin-top:10px;">
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Reg No</th>
+            <th>Name</th>
+            <th>Roll</th>
+            <th>Course</th>
+            <th>Result</th>
+            <th>Total Obtained</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+/* ---------------- FIREBASE SETUP ---------------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, deleteDoc, getDocs, collection, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAz-yo7PmFo0eFyzfjQwCP3yiB5GqqpTp0",
+  authDomain: "studentdashboard-681a8.firebaseapp.com",
+  projectId: "studentdashboard-681a8",
+  storageBucket: "studentdashboard-681a8.firebasestorage.app",
+  messagingSenderId: "171483691299",
+  appId: "1:171483691299:web:f2bc4e00b696c55b4cf496",
+  measurementId: "G-RVFB0Z9TFS"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+/* ------------------------------------------------ */
+
+/* ---------- Access control (redirect if not logged in) ---------- */
+if (!sessionStorage.getItem('adminLoggedIn')) {
+  // protect admin panel; admin-login.html should set sessionStorage.adminLoggedIn = 'true'
+  window.location.href = 'admin-login.html';
+}
+
+/* ---------- DOM refs ---------- */
+const subjectsTbody = document.querySelector('#subjectsTable tbody');
+const addSubjectBtn = document.getElementById('addSubjectBtn');
+const overallTotalEl = document.getElementById('overallTotal');
+const overallResultEl = document.getElementById('overallResult');
+const resultForm = document.getElementById('resultForm');
+const resultTableBody = document.querySelector('#resultTable tbody');
+const logoutBtn = document.getElementById('logoutBtn');
+
+/* ---------- Defaults (customize if needed) ---------- */
+const DEFAULT_MAX = {
+  theory: 100,
+  sessional: 25,
+  practical: 50,
+  practicalSessional: 25
+};
+
+/* ---------- Utility parsing helpers ---------- */
+/**
+ * parseMarkField(value, columnType)
+ * - value: string like '', '70', '70/75'
+ * - columnType: 'theory'|'sessional'|'practical'|'practicalSessional' (to pick default max if needed)
+ * returns: {obtained: number|null, max: number|null}
+ */
+function parseMarkField(value, columnType) {
+  const v = (value || '').toString().trim();
+  if (!v) return { obtained: null, max: null };
+  const parts = v.split('/').map(s => s.trim()).filter(Boolean);
+  if (parts.length === 2) {
+    const obt = Number(parts[0]);
+    const mx = Number(parts[1]);
+    return { obtained: isNaN(obt) ? null : obt, max: isNaN(mx) ? null : mx };
+  } else {
+    // single number => treat as obtained and use default max for that column
+    const obt = Number(parts[0]);
+    const mx = DEFAULT_MAX[columnType] ?? null;
+    return { obtained: isNaN(obt) ? null : obt, max: mx };
+  }
+}
+
+/* ---------- Add a blank subject row (inputs empty by default) ---------- */
+function addSubjectRow(data = null) {
+  // data optional: { name, theory1, theory2, theory3, sessional, practical, practicalSessional }
+  const tr = document.createElement('tr');
+
+  // create inputs (all text so user can enter x/y)
+  tr.innerHTML = `
+    <td><input type="text" class="sub-name" placeholder="Subject name" value="${data?.name ?? ''}"></td>
+    <td><input type="text" class="col theory1" placeholder="e.g. 70/75" value="${data?.theory1 ?? ''}"></td>
+    <td><input type="text" class="col theory2" placeholder="e.g. 40/50" value="${data?.theory2 ?? ''}"></td>
+    <td><input type="text" class="col theory3" placeholder="e.g. 30/40" value="${data?.theory3 ?? ''}"></td>
+    <td><input type="text" class="col sessional" placeholder="e.g. 24/25" value="${data?.sessional ?? ''}"></td>
+    <td><input type="text" class="col practical" placeholder="e.g. 45/50" value="${data?.practical ?? ''}"></td>
+    <td><input type="text" class="col practicalSessional" placeholder="e.g. 20/25" value="${data?.practicalSessional ?? ''}"></td>
+    <td class="subjectTotal">0 / 0</td>
+    <td><button type="button" class="btn secondary btn-delete">Delete</button></td>
+  `;
+
+  // add listeners: on input => recalc this row and overall
+  const inputs = tr.querySelectorAll('input');
+  inputs.forEach(inp => inp.addEventListener('input', () => calculateRow(tr)));
+
+  // delete handler
+  tr.querySelector('.btn-delete').addEventListener('click', () => {
+    tr.remove();
+    calculateOverall();
+  });
+
+  subjectsTbody.appendChild(tr);
+
+  // initial calc (for loaded data)
+  calculateRow(tr);
+}
+
+/* ---------- Calculate totals for one subject row ---------- */
+function calculateRow(tr) {
+  // columns mapping: index 1..7 correspond to fields
+  const nameInput = tr.querySelector('.sub-name');
+  const cols = {
+    theory1: tr.querySelector('.theory1').value,
+    theory2: tr.querySelector('.theory2').value,
+    theory3: tr.querySelector('.theory3').value,
+    sessional: tr.querySelector('.sessional').value,
+    practical: tr.querySelector('.practical').value,
+    practicalSessional: tr.querySelector('.practicalSessional').value
+  };
+
+  let obtainedSum = 0;
+  let maxSum = 0;
+  let anyFieldHasMax = false; // to detect subject presence
+
+  // parse each
+  const parsed = {};
+  Object.entries(cols).forEach(([k, v]) => {
+    const colType = (k.startsWith('theory')) ? 'theory' :
+                    (k === 'sessional') ? 'sessional' :
+                    (k === 'practical') ? 'practical' : 'practicalSessional';
+    const p = parseMarkField(v, colType);
+    parsed[k] = p;
+    if (p.max !== null) { anyFieldHasMax = true; maxSum += p.max; }
+    if (p.obtained !== null) obtainedSum += p.obtained;
+  });
+
+  const totalCell = tr.querySelector('.subjectTotal');
+  // show as "obtained / max" — if nothing entered show "0 / 0"
+  totalCell.textContent = `${obtainedSum} / ${maxSum}`;
+
+  // decide pass/reappear for this subject:
+  // - if maxSum === 0 (no marks entered), treat subject as ignored (neutral)
+  // - else pass if obtainedSum >= 40% of maxSum
+  if (maxSum === 0) {
+    // neutral style
+    totalCell.classList.remove('row-pass', 'row-fail');
+    tr.classList.remove('row-pass', 'row-fail');
+  } else {
+    const pass = (obtainedSum >= 0.4 * maxSum);
+    if (pass) {
+      totalCell.classList.add('row-pass');
+      totalCell.classList.remove('row-fail');
+      tr.classList.add('row-pass');
+      tr.classList.remove('row-fail');
+    } else {
+      totalCell.classList.add('row-fail');
+      totalCell.classList.remove('row-pass');
+      tr.classList.add('row-fail');
+      tr.classList.remove('row-pass');
+    }
+  }
+
+  // update overall
+  calculateOverall();
+}
+
+/* ---------- Calculate overall obtained and result ---------- */
+function calculateOverall() {
+  let totalObt = 0;
+  let totalMax = 0;
+  let overallPass = true;
+  let anySubject = false;
+
+  subjectsTbody.querySelectorAll('tr').forEach(tr => {
+    const [obtStr, maxStr] = tr.querySelector('.subjectTotal').textContent.split('/').map(s => s.trim());
+    const obt = Number(obtStr) || 0;
+    const mx = Number(maxStr) || 0;
+    totalObt += obt;
+    totalMax += mx;
+    if (mx > 0) {
+      anySubject = true;
+      // subject is fail if row has class row-fail
+      if (tr.classList.contains('row-fail')) overallPass = false;
+    }
+  });
+
+  overallTotalEl.value = `${totalObt} / ${totalMax}`;
+  if (!anySubject) {
+    overallResultEl.value = '';
+  } else {
+    overallResultEl.value = `${overallPass ? 'PASS' : 'REAPPEAR'}`;
+  }
+}
+
+/* ---------- Wire add subject button ---------- */
+addSubjectBtn.addEventListener('click', ()=>addSubjectRow());
+
+/* ---------- Form save (Add / Update) ---------- */
+resultForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const regNo = document.getElementById('regNo').value.trim();
+  if (!regNo) { alert('Registration No required'); return; }
+
+  // collect subjects: only those with name non-empty
+  const subjects = [];
+  subjectsTbody.querySelectorAll('tr').forEach(tr => {
+    const name = tr.querySelector('.sub-name').value.trim();
+    if (!name) return; // skip unnamed row
+    const s = {
+      name,
+      theory1: tr.querySelector('.theory1').value.trim(),
+      theory2: tr.querySelector('.theory2').value.trim(),
+      theory3: tr.querySelector('.theory3').value.trim(),
+      sessional: tr.querySelector('.sessional').value.trim(),
+      practical: tr.querySelector('.practical').value.trim(),
+      practicalSessional: tr.querySelector('.practicalSessional').value.trim(),
+      total: tr.querySelector('.subjectTotal').textContent
+    };
+    subjects.push(s);
+  });
+
+  // overall fields
+  const overallText = overallTotalEl.value || '';
+  const overallResult = overallResultEl.value || '';
+
+  const payload = {
+    regNo,
+    name: document.getElementById('name').value.trim(),
+    rollNo: document.getElementById('rollNo').value.trim(),
+    fatherName: document.getElementById('fatherName').value.trim(),
+    semPart: document.getElementById('semPart').value.trim(),
+    courseName: document.getElementById('courseName').value.trim(),
+    collegeCode: document.getElementById('collegeCode').value.trim(),
+    collegeName: document.getElementById('collegeName').value.trim(),
+    dob: document.getElementById('dob').value,
+    declarationDate: document.getElementById('declarationDate').value,
+    subjects,
+    overall: `${overallText} — ${overallResult}`
+  };
+
+  try {
+    await setDoc(doc(db, 'results', regNo), payload);
+    alert('Saved successfully: ' + regNo);
+    resultForm.reset();
+    subjectsTbody.innerHTML = '';
+    overallTotalEl.value = '';
+    overallResultEl.value = '';
+    loadResults();
+  } catch (err) {
+    console.error(err);
+    alert('Save failed — see console');
+  }
+});
+
+/* ---------- Load results list (table) ---------- */
+async function loadResults(){
+  resultTableBody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+  try {
+    const snap = await getDocs(collection(db,'results'));
+    resultTableBody.innerHTML = '';
+    snap.forEach(docSnap => {
+      const d = docSnap.data();
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.regNo||''}</td>
+        <td>${d.name||''}</td>
+        <td>${d.rollNo||''}</td>
+        <td>${d.courseName||''}</td>
+        <td>${(d.overall||'')}</td>
+        <td>${d.subjects ? d.subjects.reduce((sum,s)=>{
+            const parts = (s.total||'0/0').split('/').map(x=>Number(x)||0);
+            return sum + parts[0];
+          },0) : 0}</td>
+        <td>
+          <button class="btn secondary btn-edit" data-reg="${d.regNo}">Edit</button>
+          <button class="btn secondary btn-del" data-reg="${d.regNo}">Delete</button>
+        </td>
+      `;
+      resultTableBody.appendChild(tr);
+    });
+
+    // attach handlers using event delegation
+    resultTableBody.querySelectorAll('.btn-edit').forEach(btn => {
+      btn.addEventListener('click', () => editResult(btn.dataset.reg));
+    });
+    resultTableBody.querySelectorAll('.btn-del').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const reg = btn.dataset.reg;
+        if (!confirm('Delete ' + reg + '?')) return;
+        try {
+          await deleteDoc(doc(db,'results',reg));
+          loadResults();
+        } catch(err) { console.error(err); alert('Delete failed'); }
+      });
+    });
+
+  } catch(err){
+    console.error(err);
+    resultTableBody.innerHTML = '<tr><td colspan="7">Error loading</td></tr>';
+  }
+}
+
+/* ---------- Edit one result (load into form) ---------- */
+async function editResult(regNo) {
+  if (!regNo) return;
+  try {
+    const snap = await getDoc(doc(db,'results',regNo));
+    if (!snap.exists()) { alert('Not found: ' + regNo); return; }
+    const data = snap.data();
+
+    // populate simple fields
+    document.getElementById('regNo').value = data.regNo || '';
+    document.getElementById('name').value = data.name || '';
+    document.getElementById('rollNo').value = data.rollNo || '';
+    document.getElementById('fatherName').value = data.fatherName || '';
+    document.getElementById('semPart').value = data.semPart || '';
+    document.getElementById('courseName').value = data.courseName || '';
+    document.getElementById('collegeCode').value = data.collegeCode || '';
+    document.getElementById('collegeName').value = data.collegeName || '';
+    document.getElementById('dob').value = data.dob || '';
+    document.getElementById('declarationDate').value = data.declarationDate || '';
+
+    // populate subjects
+    subjectsTbody.innerHTML = '';
+    if (Array.isArray(data.subjects)) {
+      data.subjects.forEach(s => {
+        addSubjectRow({
+          name: s.name || '',
+          theory1: s.theory1 || '',
+          theory2: s.theory2 || '',
+          theory3: s.theory3 || '',
+          sessional: s.sessional || '',
+          practical: s.practical || '',
+          practicalSessional: s.practicalSessional || ''
+        });
+      });
+    }
+    calculateOverall();
+    // scroll to top
+    window.scrollTo({top:0, behavior:'smooth'});
+
+  } catch(err) {
+    console.error(err);
+    alert('Load failed');
+  }
+}
+
+/* ---------- Logout (works in module scope because we use event listener) ---------- */
+logoutBtn.addEventListener('click', ()=> {
+  sessionStorage.clear();
+  window.location.href = 'admin-login.html';
+});
+
+/* ---------- Init ---------- */
+loadResults();
+</script>
+</body>
+</html>
